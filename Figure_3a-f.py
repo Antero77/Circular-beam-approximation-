@@ -11,7 +11,6 @@ plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
 plt.rcParams["font.serif"] = "STIX"
 plt.rcParams["mathtext.fontset"] = "cm"
-#plt.rcParams.update({'font.size': 15})
 plt.rcParams.update({'font.size': 23})
 
 save_kwargs = {
@@ -115,7 +114,7 @@ for i in range(number_dot):
     sum_2etha2 = 0
 
 
-    n = 10 ** 4
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -137,7 +136,6 @@ for i in range(number_dot):
 
         sum_2etha = sum_2etha + temp_2etha
         sum_2etha2 = sum_2etha2 + temp_2etha ** 2
-        # etha.append(measures.eta(quick_channel, output=quick_channel.run()))
 
     sim_W2 = sumW2 / n
     sim_W4 = sumW4 / n
@@ -168,17 +166,14 @@ for i in range(number_dot):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+    #print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
+    #print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
+    #print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
     # --------------------------------------
 
-    """
-    #initial analytical
-    analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-    #analytical with local approx
-    """
-    th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    #local approximation can be used
+    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    th = 0 
     analy_1etha = np.exp(-th) * (1 - np.exp(
         -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
 
@@ -210,15 +205,7 @@ for i in range(number_dot):
 
 
 
-
-    print("1etha analy=", analy_1etha, "1etha sim=", sim_1etha)
-    print("1etha2 analy=", analy_1etha2, "1etha2 sim=", sim_1etha2)
-    print("delta 1etha2 analy=", analy_1etha2 - analy_1etha ** 2, "delta 1etha2 sim=", sim_1etha2 - sim_1etha ** 2)
-
-
-    print("2etha analy=", analy_2etha, "2etha sim=", sim_2etha)
-    print("2etha2 analy=", analy_2etha2, "2etha2 sim=", sim_2etha2)
-    print("delta 2etha2 analy=", analy_2etha2 - analy_2etha ** 2, "delta 2etha2 sim=", sim_2etha2 - sim_2etha ** 2)
+#-----------------------------------------------------------
 
     data_analy_x20.append(analy_x2_0*10**6)   #into mm**2
 
@@ -255,6 +242,7 @@ for i in range(number_dot):
 
 
 # ------------------
+# Figure for the variance of a beam-centroid coordinate
 X_Y_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_x20)
 
 X_ = np.linspace(np.min(dataX), np.max(dataX), 200)
@@ -270,19 +258,19 @@ fig, ax = plt.subplots(1, 1)
 plt.plot(X_,Y_,linewidth='3', color='#99DDFF', linestyle='solid')
 plt.plot(X_,Z_,linewidth='3', color='#EE8866', linestyle='dashed')
 ax.set(xlabel=r'Rytov parameter $σ^2_R$', ylabel=r'Variance $σ^2_{\text{bw}}$ (mm$^2$)')
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_variance.pdf", **save_kwargs)
 
-#plt.show()
+plt.show()
 
 
 
 
 # ------------------
+# Figure for the first moment of S
 X_Y_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_S)
 
 X_ = np.linspace(np.min(dataX), np.max(dataX), 200)
@@ -314,17 +302,16 @@ ax.set_xlabel(r'Rytov parameter $σ^2_R$')
 ax.set_ylabel(r'First moment $\langle S \rangle$ (cm$^2$)')
 
 
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_S.pdf", **save_kwargs)
 
-#plt.show()
+plt.show()
 
 #-------------------
-
+# Figure for the second moment of S
 
 
 X_Y_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_S2)
@@ -355,22 +342,19 @@ ax.plot(X_,Z_,linewidth='3', color='#EE8866', linestyle='dashed')
 ax.set_xlabel(r'Rytov parameter $σ^2_R$')
 ax.set_ylabel(r'Second moment $\langle S^2 \rangle$ (cm$^4$)')
 
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_S2.pdf", **save_kwargs)
 
-#plt.show()
-
-
+plt.show()
 
 
 
 
 # ------------------
-
+# Figure for the first moment of transmittance eta
 
 X_Y_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_1eta)
 
@@ -414,20 +398,19 @@ ax.set_xlabel(r'Rytov parameter $σ^2_R$')
 ax.set_ylabel(r'First moment $\langle \eta \rangle$')
 
 
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_eta.pdf", **save_kwargs)
 
-#plt.show()
+plt.show()
 
 
 
 
 #--------------------
-
+# Figure for the second moment of transmittance eta
 
 
 X_Y3_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_1eta2)
@@ -471,14 +454,13 @@ ax.plot(X_,Z4_,linewidth='3', color='#EE8866', linestyle='dotted') # second aper
 ax.set_xlabel(r'Rytov parameter $σ^2_R$')
 ax.set_ylabel(r'Second moment $\langle \eta^2 \rangle$')
 
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_eta2.pdf", **save_kwargs)
 
-#plt.show()
+plt.show()
 
 
 
@@ -489,6 +471,7 @@ plt.savefig("comp_eta2.pdf", **save_kwargs)
 
 
 #--------------------
+# Figure for the variance of transmittance eta
 
 X_Y_Spline = sp.interpolate.make_interp_spline(dataX, data_analy_1_delta_eta2)
 
@@ -533,23 +516,13 @@ ax.set_xlabel(r'Rytov parameter $σ^2_R$')
 ax.set_ylabel(r'Variance $\langle \Delta \eta^2 \rangle \times 10^{-2}$')
 
 
-#ax.set_yscale('log')
-#plt.ylim([5*10**(-4),10**(0)])
+
 ax.grid()
 
 
 plt.savefig("comp_delta_eta.pdf", **save_kwargs)
 
-#plt.show()
-
-
-
-
-
-
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
-
 plt.show()
+
+
+
