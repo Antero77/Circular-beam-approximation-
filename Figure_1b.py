@@ -1,9 +1,13 @@
 import numpy as np
 from pyatmosphere import gpu
+import matplotlib.pyplot as plt
+import scipy as sp
+from pyatmosphere import QuickChannel, measures
+
 
 gpu.config['use_gpu'] = True
 
-import matplotlib.pyplot as plt
+
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -19,18 +23,8 @@ save_kwargs = {
         }
 
 
-import seaborn as sns
-import datetime
-import scipy as sp
 
 
-
-
-
-### QuickChannel example
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 z_ax=[]
 y_ax=[]
@@ -59,9 +53,7 @@ for i in range(number_dot):
 
     )
 
-    # quick_channel.plot(pupil=False)
-    ##print(measures.I(quick_channel, pupil=False))
-    # plt.show()
+
     # -------------------
 
     dataW2 = []
@@ -69,7 +61,7 @@ for i in range(number_dot):
     sumx2_0=0
     sumW2 = 0
     sumW4 = 0
-    n = 10 ** 4
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -91,8 +83,8 @@ for i in range(number_dot):
     mu = np.log((meanW2 ** 2) / (meanW4 ** 0.5))
     sigma2 = np.log(meanW4 / (meanW2 ** 2))
 
-    print('mean for lognormal', mu)
-    print('variance for lognormal', sigma2)
+    #print('mean for lognormal', mu)
+    #print('variance for lognormal', sigma2)
 
     # -------------------
 
@@ -149,8 +141,3 @@ ax2.grid()
 plt.savefig("corr_S_x2_0.pdf", **save_kwargs)
 
 plt.show()
-
-
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60)
