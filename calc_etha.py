@@ -1,13 +1,11 @@
 import numpy as np
 import scipy as sp
-import scipy.special
 from pyatmosphere import gpu
-from pyatmosphere import simulations
-
+import matplotlib.pyplot as plt
+from pyatmosphere import QuickChannel, measures
 
 gpu.config['use_gpu'] = True
 
-import matplotlib.pyplot as plt
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -24,12 +22,9 @@ save_kwargs = {
         }
 
 
-import datetime
 
-### QuickChannel example
 
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
+
 
 
 data_analy_x20=[]
