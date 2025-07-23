@@ -1,9 +1,12 @@
 import numpy as np
 from pyatmosphere import gpu
+import scipy as sp
+import matplotlib.pyplot as plt
+from pyatmosphere import QuickChannel, measures
+
 
 gpu.config['use_gpu'] = True
 
-import matplotlib.pyplot as plt
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -19,18 +22,8 @@ save_kwargs = {
         }
 
 
-import seaborn as sns
-import datetime
-import scipy as sp
 
 
-
-
-
-### QuickChannel example
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 l = 1000
 g=-15
@@ -53,9 +46,6 @@ quick_channel = QuickChannel(
 
 )
 
-#quick_channel.plot(pupil=False)
-##print(measures.I(quick_channel, pupil=False))
-#plt.show()
 # -------------------
 
 dataW2 = []
@@ -67,9 +57,9 @@ for i in range(n):
 
     W2 = 4 * (measures.mean_x2(quick_channel, output=output) -
               (measures.mean_x(quick_channel, output=output)) ** 2)
-    #--------------------------
+    
     W2=W2*10**4 # into cm^2
-    #--------------------------
+    
     sumW2 = sumW2 + W2
     sumW4 = sumW4 + W2 ** 2
     dataW2.append(W2)
@@ -81,24 +71,9 @@ meanW4 = sumW4 / n
 mu = np.log((meanW2 ** 2) / (meanW4 ** 0.5))
 sigma2 = np.log(meanW4 / (meanW2 ** 2))
 
-print('mean for lognormal', mu)
-print('variance for lognormal', sigma2)
+#print('mean for lognormal', mu)
+#print('variance for lognormal', sigma2)
 
-
-# -------------------
-
-
-"""
-
-ax = sns.histplot(dataW2, bins=100, kde=False, element="step", stat='density')
-
-
-x = np.linspace(np.min(dataW2), np.max(dataW2))
-pdt = sp.stats.lognorm(s=np.sqrt(sigma2), scale=np.exp(mu))
-plt.plot(x, pdt.pdf(x), color='red')
-
-ax.set(xlabel=r'Squared beam-spot radius S, $(m^2)$', ylabel='Probability density')
-"""
 # ------------------
 
 fig, ax = plt.subplots(1, 1)
@@ -116,14 +91,6 @@ ax.set(xlabel=r'Squared beam-spot radius S $(cm^2)$', ylabel='Probability densit
 # ------------------
 
 
-
-
 ax.grid()
-
-
 plt.savefig("s_ditrib.pdf", **save_kwargs)
-
 plt.show()
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60)
