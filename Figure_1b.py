@@ -113,7 +113,7 @@ plt.plot(X_,Y_,linewidth='2')
 plt.plot(x_ax,y_ax,'go')
 ax.set(xlabel=r'Rytov parameter $σ^2_R$', ylabel=r'Kolmogorov-Smirnov statistic')
 ax.set_yscale('log')
-plt.ylim([5*10**(-4),10**(0)])
+#plt.ylim([5*10**(-4),10**(0)])
 ax.grid()
 
 
