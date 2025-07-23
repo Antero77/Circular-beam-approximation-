@@ -26,7 +26,7 @@ save_kwargs = {
 
 
 
-z_ax=[]
+
 y_ax=[]
 x_ax=[]
 number_dot=10
@@ -57,8 +57,6 @@ for i in range(number_dot):
     # -------------------
 
     dataW2 = []
-    datax2_0=[]
-    sumx2_0=0
     sumW2 = 0
     sumW4 = 0
     n = 10 ** 5
@@ -69,14 +67,11 @@ for i in range(number_dot):
                   (measures.mean_x(quick_channel, output=output)) ** 2)
         x2_0=measures.mean_x(quick_channel, output=output)**2
 
-        sumx2_0=sumx2_0+ x2_0
-        datax2_0.append(x2_0)
         sumW2 = sumW2 + W2
         sumW4 = sumW4 + W2 ** 2
         dataW2.append(W2)
 
     # ------------
-    meanx2_0= sumx2_0/n
     meanW2 = sumW2 / n
     meanW4 = sumW4 / n
 
@@ -95,7 +90,6 @@ for i in range(number_dot):
     y_ax.append(sp.stats.ks_2samp(dataW2, dataW2_analy)[0])
     x_ax.append(quick_channel.get_rythov2())
 
-    z_ax.append(np.corrcoef(dataW2, datax2_0)[0,1])
 
 
 
