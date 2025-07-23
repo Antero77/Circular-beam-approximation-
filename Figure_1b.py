@@ -121,23 +121,4 @@ plt.savefig("s_Kolmog_Smirn.pdf", **save_kwargs)
 
 plt.show()
 
-#---------------------
 
-X_Z_Spline = sp.interpolate.make_interp_spline(x_ax, z_ax)
-
-X_ = np.linspace(np.min(x_ax), np.max(x_ax), 200)
-Z_ = X_Z_Spline(X_)
-
-
-
-fig2, ax2 = plt.subplots(1, 1)
-plt.plot(X_,Z_,linewidth='2')
-plt.plot(x_ax,z_ax,'go')
-ax2.set(xlabel=r'Rytov parameter $σ^2_R$', ylabel=r'Correlation coefficient $ρ(S, x^2_0)$')
-
-ax2.grid()
-
-
-plt.savefig("corr_S_x2_0.pdf", **save_kwargs)
-
-plt.show()
