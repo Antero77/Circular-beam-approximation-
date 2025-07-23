@@ -27,7 +27,6 @@ save_kwargs = {
 
 
 z_ax=[]
-y_ax=[]
 x_ax=[]
 number_dot=10
 for i in range(number_dot):
@@ -88,11 +87,7 @@ for i in range(number_dot):
 
     # -------------------
 
-    x = np.linspace(np.min(dataW2), np.max(dataW2))
-    pdt = sp.stats.lognorm(s=np.sqrt(sigma2), scale=np.exp(mu))
-    dataW2_analy = pdt.rvs(size=n)
 
-    y_ax.append(sp.stats.ks_2samp(dataW2, dataW2_analy)[0])
     x_ax.append(quick_channel.get_rythov2())
 
     z_ax.append(np.corrcoef(dataW2, datax2_0)[0,1])
