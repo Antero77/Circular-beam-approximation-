@@ -166,9 +166,7 @@ for i in range(number_dot):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    #print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    #print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    #print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+
     # --------------------------------------
 
     #local approximation can be used
