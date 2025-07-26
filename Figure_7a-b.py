@@ -1,12 +1,16 @@
 import numpy as np
 import scipy as sp
 from pyatmosphere import gpu
-
+from scipy.special import binom
+import matplotlib.pyplot as plt
+import circular_beam
+from scipy.interpolate import make_interp_spline
+from pyatmosphere import QuickChannel, measures
 
 gpu.config['use_gpu'] = True
 
-from scipy.special import binom
-import matplotlib.pyplot as plt
+
+
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -21,17 +25,7 @@ save_kwargs = {
         "pad_inches": 0.005
         }
 
-import datetime
 
-import seaborn as sns
-import datetime
-import circular_beam
-
-from scipy.interpolate import make_interp_spline
-
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 #----------------------------------
 
@@ -95,7 +89,6 @@ def avrEta2(pdts, t):
 
 
 
-
 def get_n_mean(alpha_0, r):
     return np.sinh(r)**2 + np.real(alpha_0)**2
 
@@ -140,7 +133,7 @@ Binom_sim=[]
 
 frac=[]
 longterm=0.02797
-number_dot_app=15
+number_dot_app=20
 
 
 
@@ -178,7 +171,7 @@ for i in range(number_dot_app):
     sum_etha = 0
     sum_etha2 = 0
 
-    n = 10 ** 4
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -219,17 +212,12 @@ for i in range(number_dot_app):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+
     # --------------------------------------
 
-    """
-    initial analytical
-    analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-    analytical with local approx
-    """
-    th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    #local approximation can be used
+    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    th = 0 
     analy_etha = np.exp(-th) * (1 - np.exp(
         -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
 
@@ -243,8 +231,6 @@ for i in range(number_dot_app):
 
     analy_etha2 = norm * first_mn * second_mn
 
-    print("etha analy=", analy_etha, "etha sim=", sim_etha)
-    print("etha2 analy=", analy_etha2, "etha2 sim=", sim_etha2)
 
     # --------------------------------------------------------------
     determ_losses = 10 ** (-(3 + 0.1 * (quick_channel.path.length / 1000)) / 10)
@@ -431,54 +417,3 @@ ax.set_ylim(-0.7, 0.1)
 ax.set(xlabel=r'Normalized aperture radius $a/W_{\text{LT}}$', ylabel='Binomial $Q_{7}$ parameter')
 plt.savefig("app_Binomial.pdf", **save_kwargs)
 
-
-
-#---------------------------------------
-
-
-
-
-"""
-
-
-r1inq3_1=[]
-r1inq3_2=[]
-
-r2inq3_1=[]
-r2inq3_2=[]
-
-
-
-r1=0.3
-r2=0.7
-n=200
-alpha = np.linspace(0.01, 5, n)
-for m in alpha:
-    r1inq3_1.append( avrPn(1,3, m, r1)**2-3*avrPn(0,3, m, r1)*avrPn(2,3, m, 1) )
-    r1inq3_2.append( 3*avrPn(1,3, m, r1)**2+avrPn(2,3, m, r1)**2+3*avrPn(1,3, m, r1)*(avrPn(0,3, m, r1)+avrPn(2,3, m, r1)-1) )
-
-    r2inq3_1.append( avrPn(1,3, m, r2)**2-3*avrPn(0,3, m, r2)*avrPn(2,3, m, 1) )
-    r2inq3_2.append( 3*avrPn(1,3, m, r2)**2+avrPn(2,3, m, r2)**2+3*avrPn(1,3, m, r2)*(avrPn(0,3, m, r2)+avrPn(2,3, m, r2)-1) )
-
-
-fig, ax = plt.subplots()
-ax.plot(alpha, r1inq3_1, 'green', alpha, r1inq3_2, 'blue', linewidth='2')
-ax.plot(alpha, r2inq3_1, 'green', alpha, r2inq3_2, 'blue', linewidth='2', linestyle='--')
-
-
-ax.grid()
-ax.set(xlabel=r'Coherent amplitude $\alpha_0$', ylabel='Violation')
-plt.savefig("tight_ineq.pdf", **save_kwargs)
-
-"""
-
-
-
-
-
-
-
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
