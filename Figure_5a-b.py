@@ -3,10 +3,14 @@ import scipy as sp
 from pyatmosphere import gpu
 from scipy.stats import rv_continuous
 from scipy.ndimage import gaussian_filter1d
+import circular_beam
+from pyatmosphere import QuickChannel, measures
+import matplotlib.pyplot as plt
+
 
 gpu.config['use_gpu'] = True
 
-import matplotlib.pyplot as plt
+
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -23,18 +27,10 @@ save_kwargs = {
 
 
 
-import seaborn as sns
-import datetime
-
-import circular_beam
-
-from pyatmosphere.theory.pdt import beam_wandering_pdt
 
 
-### QuickChannel example
 
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
+
 
 
 
@@ -43,12 +39,12 @@ KS_circanaly=[]
 KS_ancSim=[]
 KS_ancanaly=[]
 frac=[]
-longterm=0.02797 #for good 0.02797, for bad  0.01934
-number_dot_KS=4
+longterm=0.02797 
+number_dot_KS=20
 
 for i in range(number_dot_KS):
     aperture=0.003+(1.7*longterm-0.003)*i/number_dot_KS
-    l = 2000
+    l = 1000
     g = -15
     Cn2 = 10 ** g
     beam_w0 = (l * 8.08 * 10 ** (-7) / np.pi) ** 0.5
@@ -81,7 +77,7 @@ for i in range(number_dot_KS):
     sum_etha = 0
     sum_etha2 = 0
 
-    n = 10 ** 2
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -122,17 +118,12 @@ for i in range(number_dot_KS):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+
     # --------------------------------------
 
-    """
-    initial analytical
-    analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-    analytical with local approx
-    """
-    th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    #local approximation can be used
+    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    th = 0 
     analy_etha = np.exp(-th) * (1 - np.exp(
         -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
 
@@ -146,52 +137,7 @@ for i in range(number_dot_KS):
 
     analy_etha2 = norm * first_mn * second_mn
 
-    print("etha analy=", analy_etha, "etha sim=", sim_etha)
-    print("etha2 analy=", analy_etha2, "etha2 sim=", sim_etha2)
 
-
-    # --------------------------------------
-
-    def circularPDT(a, meanW2, meanW4, meanx2_0):
-
-        def etha0(a, W):
-            return 1 - np.exp(-2 * (a / W) ** 2)
-
-        def lambd(a, W):
-            x = 4 * (a / W) ** 2
-            z = np.where(1 - np.exp(-x) * sp.special.iv(0, x) < 1e-15, 1e-15, 1 - np.exp(-x) * sp.special.iv(0, x))
-            value = 2 * x * (np.exp(-x) * sp.special.iv(1, x) / z) / (np.log(2 * etha0(a, W) / z))
-            return value
-
-        def R(a, W):
-            x = 4 * (a / W) ** 2
-            z = np.where(1 - np.exp(-x) * sp.special.iv(0, x) < 1e-15, 1e-15, 1 - np.exp(-x) * sp.special.iv(0, x))
-            return a * (np.log(2 * etha0(a, W) / z)) ** (-1 / lambd(a, W))
-
-        def integr(W2, etha, sigm2_bw, a):
-            W = W2 ** 0.5
-            l = np.where(2 / lambd(a, W) < 1e-15, 1e-15, 2 / lambd(a, W))
-
-            _log = np.log(etha0(a, W) / etha)
-            y = np.where(_log <= 0, 0, _log ** (l - 1))
-            z = np.where(_log <= 0, 0, _log ** l)
-
-            value = ((R(a, W) ** 2 / (sigm2_bw * lambd(a, W) * etha)) * y * np.exp(-R(a, W) ** 2 / (2 * sigm2_bw) * z) *
-                     W2_distr.pdf(W ** 2))
-            value = np.where(value == np.NaN, 0, value)
-            return value
-
-        mu = np.log((meanW2 ** 2) / (meanW4 ** 0.5))
-        sigma2 = np.log(meanW4 / (meanW2 ** 2))
-
-        W2_distr = sp.stats.lognorm(s=np.sqrt(sigma2), scale=np.exp(mu))
-        range_prec = 0.001
-        Wleft, Wright = W2_distr.ppf(range_prec), W2_distr.ppf(1 - range_prec)
-
-        return lambda etha: sp.integrate.quad(integr, Wleft, Wright, args=(etha, meanx2_0, a), limit=75)[0]
-
-
-    # --------------------------------------------------------
 
 
 
@@ -201,8 +147,7 @@ for i in range(number_dot_KS):
     # --------------------------------------------------------------
 
     t = np.linspace(0.00001, 1, num=number_for_dots_pdt)
-    # t = np.linspace(0.9, 1, num=number_for_dots_pdt)
-    # pdt_circ_sim=np.vectorize(circularPDT(quick_channel.pupil.radius, sim_W2, sim_W4, sim_x2_0))(t)
+
     circ_sim = circular_beam.CircularBeamModel.from_beam_params(
         S_BW=np.sqrt(sim_x2_0),
         W2_mean=sim_W2,
@@ -232,12 +177,7 @@ for i in range(number_dot_KS):
         initial_guess_W2_mean=sim_W2,
         initial_guess_W4_mean=sim_W4
     )
-    """
-    anc_sim_W2=np.exp(acb_model_sim.S_mu+acb_model_sim.S_sigma2/2)
-    anc_sim_W4=np.exp(2*acb_model_sim.S_mu+2*acb_model_sim.S_sigma2)
 
-    pdt_anc_sim=np.vectorize(circularPDT(quick_channel.pupil.radius, anc_sim_W2, anc_sim_W4, sim_x2_0))(t)
-    """
     pdt_anc_sim = acb_model_sim.get_pdt(t)
 
 
@@ -249,12 +189,7 @@ for i in range(number_dot_KS):
         initial_guess_W2_mean=analy_W2,
         initial_guess_W4_mean=analy_W4
     )
-    """
-    anc_analy_W2=np.exp(acb_model_analy.S_mu+acb_model_analy.S_sigma2/2)
-    anc_analy_W4=np.exp(2*acb_model_analy.S_mu+2*acb_model_analy.S_sigma2)
 
-    pdt_anc_analy=np.vectorize(circularPDT(quick_channel.pupil.radius, anc_analy_W2, anc_analy_W4, analy_x2_0))(t)
-    """
     pdt_anc_analy = acb_model_analy.get_pdt(t)
 
 
@@ -355,29 +290,8 @@ plt.plot(X_,Y3_,color='violet',linewidth='2', linestyle='dashed')
 
 
 
-"""
-ax.legend(['directly simulated','circular from sim','circular analytical', 'anchored from sim', 'anchored analytical'])
-"""
+
 ax.grid()
 ax.set_yscale('log')
 ax.set(xlabel=r'Normalized aperture radius $a/W_{LT}$', ylabel='Kolmogorov-Smirnov statistic $D_N$')
 plt.savefig("PDT_KS.pdf", **save_kwargs)
-
-#plt.show()
-
-
-
-
-
-"""
-beam_result = simulations.BeamResult(quick_channel)
-pdt_result = simulations.PDTResult(quick_channel)
-sim = simulations.Simulation([beam_result, pdt_result])
-sim.run(plot_step=100)
-"""
-
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
-
