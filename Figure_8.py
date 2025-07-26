@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import circular_beam
 from scipy.interpolate import make_interp_spline
 from pyatmosphere import QuickChannel, measures
-
+import analytics
 
 
 gpu.config['use_gpu'] = True
@@ -138,47 +138,20 @@ for i in range(number_dot_app):
     sim_etha2 = sum_etha2 / n
     sim_etha1_2 = sum_etha1_2 / n
     # ------------------------------
-    omega = quick_channel.source.k * quick_channel.source.w0 ** 2 / 2 / quick_channel.path.length
-    popravka_ro = 1.457 / 1.5
 
-    analy_x2_0 = (0.32 * quick_channel.source.w0 ** 2 * popravka_ro * quick_channel.get_rythov2() * omega ** (-7 / 6) -
-                  0.06 * quick_channel.source.w0 ** 2 * popravka_ro ** 2 * quick_channel.get_rythov2() ** 2 * omega ** (
-                              -1 / 3))
+    analy_x2_0 = analytics.get_x2_0(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
-    analy_W2 = 4 * (quick_channel.source.w0 ** 2 * omega ** (-2) / 4 +
-                    1.07 * quick_channel.source.w0 ** 2 * popravka_ro * quick_channel.get_rythov2() * omega ** (
-                                -7 / 6) - analy_x2_0)
+    analy_W2 = analytics.get_W2(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
-    analy_W4 = 16 * (quick_channel.source.w0 ** 4 * omega ** (-4) / 16 +
-                     0.58 * quick_channel.source.w0 ** 4 * popravka_ro * quick_channel.get_rythov2() * omega ** (
-                                 -19 / 6) +
-                     1.37 * quick_channel.source.w0 ** 4 * popravka_ro ** 2 * quick_channel.get_rythov2() ** 2 * omega ** (
-                                 -7 / 3) -
-                     0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
-
+    analy_W4 = analytics.get_W4(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
     # --------------------------------------
 
-    #local approximation can be used
-    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
-    th = 0 
-    analy_etha = np.exp(-th) * (1 - np.exp(
-        -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
+    analy_etha = analytics.get_etha(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2(), quick_channel.pupil.radius)
 
-    alph = omega ** (-2) + 3.26 * omega ** (-7 / 6) * popravka_ro * quick_channel.get_rythov2()
+    analy_etha2 = analytics.get_etha2(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2(), quick_channel.pupil.radius)
 
-    norm = 1
-    first_mn = 1 - np.exp(
-        -quick_channel.pupil.radius ** 2 * (alph * omega ** 2 + 1) / alph / quick_channel.source.w0 ** 2)
-    second_mn = 1 - np.exp(
-        -4 * omega ** 2 * quick_channel.pupil.radius ** 2 / quick_channel.source.w0 ** 2 / (alph * omega ** 2 + 1))
-
-    analy_etha2 = norm * first_mn * second_mn
-
-    print("etha analy=", analy_etha, "etha sim=", sim_etha)
-    print("etha2 analy=", analy_etha2, "etha2 sim=", sim_etha2)
-
-    # --------------------------------------------------------------
+    #-----------------------------------------------------------
     determ_losses = 10 ** (-(3 + 0.1 * (quick_channel.path.length / 1000)) / 10)
 
 
