@@ -1,10 +1,14 @@
 import numpy as np
 import scipy as sp
 from pyatmosphere import gpu
+import circular_beam
+from pyatmosphere import QuickChannel, measures
+import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter1d
 
 gpu.config['use_gpu'] = True
 
-import matplotlib.pyplot as plt
+
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -21,18 +25,7 @@ save_kwargs = {
 
 
 
-import seaborn as sns
-import datetime
 
-import circular_beam
-
-from pyatmosphere.theory.pdt import beam_wandering_pdt
-
-
-### QuickChannel example
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 
 KS_ancSim_direct=[]
@@ -41,7 +34,7 @@ KS_ancSim_hidden=[]
 KS_ancanaly_hidden=[]
 
 frac=[]
-longterm=0.02797 #for good 0.02797, for bad  0.01934
+longterm=0.02797
 number_dot_KS=20
 
 
@@ -80,7 +73,7 @@ for i in range(number_dot_KS):
     sum_etha = 0
     sum_etha2 = 0
 
-    n = 10 ** 4
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -121,17 +114,12 @@ for i in range(number_dot_KS):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+
     # --------------------------------------
 
-    """
-    initial analytical
-    analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-    analytical with local approx
-    """
-    th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    #local approximation can be used
+    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    th = 0 
     analy_etha = np.exp(-th) * (1 - np.exp(
         -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
 
@@ -145,8 +133,6 @@ for i in range(number_dot_KS):
 
     analy_etha2 = norm * first_mn * second_mn
 
-    print("etha analy=", analy_etha, "etha sim=", sim_etha)
-    print("etha2 analy=", analy_etha2, "etha2 sim=", sim_etha2)
     # -----------------------------------------------------------
     determ_losses = 10 ** (-(3 + 0.1 * (quick_channel.path.length / 1000)) / 10)
     # --------------------------------------------------------------
@@ -158,7 +144,6 @@ for i in range(number_dot_KS):
     # --------------------------------------------------------------
 
     t = np.linspace(0.00001, 1, num=number_for_dots_pdt)
-    # t = np.linspace(0.9, 1, num=number_for_dots_pdt)
     t_another = [x * determ_losses for x in t]
 
     # ----------------------------------------------------------------
@@ -175,7 +160,6 @@ for i in range(number_dot_KS):
     pdt_anc_sim_directloss = acb_model_sim_directloss.get_pdt(t)
 
     pdt_anc_sim_directloss = [x / determ_losses for x in pdt_anc_sim_directloss]
-    # plt.plot(t_another, pdt_anc_sim_directloss, color='orange',linewidth='2', linestyle='dashed')
 
     acb_model_analy_directloss = circular_beam.AnchoredCircularBeamModel.from_beam_params(
         S_BW=np.sqrt(analy_x2_0),
@@ -189,7 +173,7 @@ for i in range(number_dot_KS):
     pdt_anc_analy_directloss = acb_model_analy_directloss.get_pdt(t)
 
     pdt_anc_analy_directloss = [x / determ_losses for x in pdt_anc_analy_directloss]
-    # plt.plot(t_another, pdt_anc_analy_directloss, color='violet',linewidth='2', linestyle='dashed')
+
 
     # ------------------------------------------------------------------------------------------------------
     acb_model_sim_hiddenloss = circular_beam.AnchoredCircularBeamModel.from_beam_params(
@@ -203,7 +187,7 @@ for i in range(number_dot_KS):
 
     pdt_anc_sim_hiddenloss = acb_model_sim_hiddenloss.get_pdt(t)
 
-    # plt.plot(t, pdt_anc_sim_hiddenloss, color='#C84C05',linewidth='2', linestyle='dashed')
+
 
     acb_model_analy_hiddenloss = circular_beam.AnchoredCircularBeamModel.from_beam_params(
         S_BW=np.sqrt(analy_x2_0),
@@ -216,7 +200,7 @@ for i in range(number_dot_KS):
 
     pdt_anc_analy_hiddenloss = acb_model_analy_hiddenloss.get_pdt(t)
 
-    # plt.plot(t, pdt_anc_analy_hiddenloss, color='#69247C',linewidth='2', linestyle='dashed')
+
 
     # --------------------------------------------------------------
     max_diff_ancsim_direct=0
@@ -281,49 +265,34 @@ X_ = np.linspace(np.min(frac), np.max(frac), 200)
 X_Y_Spline = sp.interpolate.make_interp_spline(frac, KS_ancSim_direct)
 
 Y_ = X_Y_Spline(X_)
-
+Y_=gaussian_filter1d(Y_, 1)
 plt.plot(X_,Y_,color='orange',linewidth='2', linestyle='dashed')
 
 
 X_Y1_Spline = sp.interpolate.make_interp_spline(frac, KS_ancanaly_direct)
 
 Y1_ = X_Y1_Spline(X_)
-
+Y1_=gaussian_filter1d (Y1_, 1)
 plt.plot(X_,Y1_,color='violet',linewidth='2', linestyle='dashed')
 
 
 X_Y2_Spline = sp.interpolate.make_interp_spline(frac, KS_ancSim_hidden)
 
 Y2_ = X_Y2_Spline(X_)
-
+Y2_=gaussian_filter1d (Y2_, 3)
 plt.plot(X_,Y2_,color='#C84C05',linewidth='2', linestyle='dashed')
 
 
 X_Y3_Spline = sp.interpolate.make_interp_spline(frac, KS_ancanaly_hidden)
 
 Y3_ = X_Y3_Spline(X_)
-
+Y3_=gaussian_filter1d (Y3_, 3)
 plt.plot(X_,Y3_,color='#69247C',linewidth='2', linestyle='dashed')
 
 
 
-
-
-"""
-ax.legend(['directly simulated','circular from sim','circular analytical', 'anchored from sim', 'anchored analytical'])
-"""
 ax.grid()
 ax.set_yscale('log')
 ax.set(xlabel=r'Normalized aperture radius $a/W_{LT}$', ylabel='Kolmogorov-Smirnov statistic $D_N$')
-plt.savefig("PDT_KS.pdf", **save_kwargs)
-
-#plt.show()
-
-
-
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
-
+plt.savefig("PDT_KS_determ.pdf", **save_kwargs)
 
