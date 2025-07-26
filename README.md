@@ -1,2 +1,3 @@
-# Circular-beam-approximation-
-Codes for figures in arXiv:2507.12947
+# Circular beam approximation for quantum channels in the turbulent atmosphere
+
+
