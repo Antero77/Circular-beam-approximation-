@@ -1,12 +1,15 @@
 import numpy as np
 import scipy as sp
 from pyatmosphere import gpu
+import matplotlib.pyplot as plt
+import circular_beam
+from scipy.interpolate import make_interp_spline
+from pyatmosphere import QuickChannel, measures
+
 
 
 gpu.config['use_gpu'] = True
 
-from scipy.special import binom
-import matplotlib.pyplot as plt
 
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["font.family"] = "DejaVu Serif"
@@ -23,15 +26,6 @@ save_kwargs = {
 
 
 
-import seaborn as sns
-import datetime
-import circular_beam
-
-from scipy.interpolate import make_interp_spline
-
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 #----------------------------------
 
@@ -56,8 +50,6 @@ def avrEta_sqr(pdts, t):
 def get_squeez(alpha_0, squeez_in, etha, etha_sqr):
     return 10*np.log10( etha*(10**(squeez_in/10)-1) + 1 + 4*alpha_0**2*(etha-etha_sqr**2) )
 
-def get_separate(alpha_0, squeez_in, etha, etha_sqr):
-    return [etha, etha-etha_sqr**2, etha*(10**(squeez_in/10)-1), 1, 4*alpha_0**2*(etha-etha_sqr**2)]
 
 
 
@@ -82,7 +74,7 @@ squeez_sim2=[]
 
 frac=[]
 longterm=0.02797
-number_dot_app=15
+number_dot_app=20
 
 
 
@@ -121,7 +113,7 @@ for i in range(number_dot_app):
     sum_etha2 = 0
     sum_etha1_2 = 0
 
-    n = 10 ** 4
+    n = 10 ** 5
     for i in range(n):
         output = quick_channel.run(pupil=False)
 
@@ -164,17 +156,12 @@ for i in range(number_dot_app):
                                  -7 / 3) -
                      0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
 
-    print("x2_0 analy=", analy_x2_0, "x2_0 sim=", sim_x2_0)
-    print("W2 analy=", analy_W2, "W2 sim=", sim_W2)
-    print("W4 analy=", analy_W4, "W4 sim=", sim_W4)
+
     # --------------------------------------
 
-    """
-    initial analytical
-    analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-    analytical with local approx
-    """
-    th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    #local approximation can be used
+    # th = 0.136 * popravka_ro * quick_channel.get_rythov2() * omega ** (-5 / 6)
+    th = 0 
     analy_etha = np.exp(-th) * (1 - np.exp(
         -quick_channel.pupil.radius ** 2 * omega ** 2 / quick_channel.source.w0 ** 2 / (0.5 + 5 * th)))
 
@@ -265,23 +252,6 @@ for i in range(number_dot_app):
 
 
 
-
-
-
-    """
-    separateSim=get_separate(alpha0, squeez_in, avrEta(pdt_etha, t), avrEta_sqr(pdt_etha, t))
-    separateCircsim=get_separate(alpha0, squeez_in, avrEta(pdt_circ_sim, t) * determ_losses, avrEta_sqr(pdt_circ_sim, t) * determ_losses ** 0.5)
-    separateCircanaly=get_separate(alpha0, squeez_in, avrEta(pdt_circ_analy, t) * determ_losses, avrEta_sqr(pdt_circ_analy, t) * determ_losses ** 0.5)
-    separateAncsim=get_separate(alpha0, squeez_in, avrEta(pdt_anc_sim, t) * determ_losses, avrEta_sqr(pdt_anc_sim, t) * determ_losses ** 0.5)
-    separateAncanaly=get_separate(alpha0, squeez_in, avrEta(pdt_anc_analy, t) * determ_losses, avrEta_sqr(pdt_anc_analy, t) * determ_losses ** 0.5)
-
-    print('sim, etha=',separateSim[0],' variance sqrt(etha)=', separateSim[1], ' first term=', separateSim[2],' second term=',separateSim[3], ' third term=', separateSim[4]  )
-    print('circ sim, etha=', separateCircsim[0], ' variance sqrt(etha)=', separateCircsim[1], ' first term=', separateCircsim[2],' second term=', separateCircsim[3], ' third term=', separateCircsim[4])
-    print('circ analy, etha=', separateCircanaly[0], ' variance sqrt(etha)=', separateCircanaly[1], ' first term=', separateCircanaly[2], ' second term=', separateCircanaly[3], ' third term=', separateCircanaly[4])
-    print('anc sim, etha=', separateAncsim[0], ' variance sqrt(etha)=', separateAncsim[1], ' first term=', separateAncsim[2],' second term=', separateAncsim[3], ' third term=', separateAncsim[4])
-    print('anc analy, etha=', separateAncanaly[0], ' variance sqrt(etha)=', separateAncanaly[1], ' first term=', separateAncanaly[2], ' second term=', separateAncanaly[3], ' third term=', separateAncanaly[4])
-    """
-
 #-----------------------------------------------------------------
 fig, ax = plt.subplots(1, 1)
 X_ = np.linspace(np.min(frac), np.max(frac), 200)
@@ -325,16 +295,8 @@ plt.plot(X_,Y3_,color='violet',linewidth='2', linestyle='dashed')
 
 
 
-
-
 ax.grid()
 ax.set_ylim(-1.25, 0.0)
 ax.set(xlabel=r'Normalized aperture radius $a/W_{\text{LT}}$', ylabel='Squeezing (dB)')
 plt.savefig("app_Squeezing4.pdf", **save_kwargs)
 
-
-
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
