@@ -7,13 +7,13 @@ Title: Circular beam approximation for quantum channels in the turbulent atmosph
 
 Author: I.O. Pechonkin (Bogolyubov Institute for Theoretical Physics of the National Academy of Sciences of Ukraine) - ORCID: [0009-0006-1686-0381](https://orcid.org/0009-0006-1686-0381) 
 
-M.?. Klen (Bogolyubov Institute for Theoretical Physics of the National Academy of Sciences of Ukraine) - ORCID: [0009-0009-3030-6450](https://orcid.org/0009-0009-3030-6450)  
+M.D. Klen (Bogolyubov Institute for Theoretical Physics of the National Academy of Sciences of Ukraine) - ORCID: [0009-0009-3030-6450](https://orcid.org/0009-0009-3030-6450)  
 
 A.A?. Semenov (Bogolyubov Institute for Theoretical Physics of the National Academy of Sciences of Ukraine) - ORCID: [0000-0001-5104-6445](https://orcid.org/0000-0001-5104-6445) 
 
 Печонкін Ілля Олексійович (Інститут теоретичної фізики ім. М.М. Боголюбова Національної академії наук України) - ORCID: [0009-0006-1686-0381](https://orcid.org/0009-0006-1686-0381)
 
-Клен Микита ? (Інститут теоретичної фізики ім. М.М. Боголюбова Національної академії наук України) - ORCID: [0009-0009-3030-6450](https://orcid.org/0009-0009-3030-6450)
+Клен Микита Дмитрович (Інститут теоретичної фізики ім. М.М. Боголюбова Національної академії наук України) - ORCID: [0009-0009-3030-6450](https://orcid.org/0009-0009-3030-6450)
 
 Семенов Андрій Олександрович (Інститут теоретичної фізики ім. М.М. Боголюбова Національної академії наук України) - ORCID: [0000-0001-5104-6445](https://orcid.org/0000-0001-5104-6445)
 
