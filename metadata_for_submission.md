@@ -32,6 +32,8 @@ Notes: Changeable parameters of the beam and channel: "length" - length of the c
        "beam_wvl" - beam wavelength; "beam_w0" - beam width at the transmitter plane; "aperture_radius" - radius of the aperture;
        "grid_resolution" - resolution of the grid in the Phase screen method (usually taken as a power of two); "F0" - wave-front radius at the transmitter plane; 
        "l0" and "L0" - inner and outer scales of turbulence, respectively; "f_min" and "f_max" - range of the scalar spatial frequency (usually taken as 1/"L0" and 1/"l0", respectively).
+
+       
        Змінювані парметри пучка та каналу: "length" - довжина каналу; "Cn2" - структурна константа показника заломлення; "count_ps" - кількість фазових екранів у методі фазових екранів;
        "beam_wvl" - довжина хвилі пучка; "beam_w0" - ширина пучка в площині джерела; "aperture_radius" - радіус апертури; 
        "grid_resolution" - роздільна здатність сітки в методі фазових екранів (зазвичай, дорівнює степінь двійки); 
