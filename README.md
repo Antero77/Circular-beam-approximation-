@@ -5,9 +5,9 @@ This repository contains the source code used to generate the figures presented 
 ## Repository structure
 
 The project is organised as follows:
-- `Figure_X.py` - these files allow one to generate the corresponding Figures, where X denotes the number of the figure;
-- `circular_beam.py`, `beam_wandering.py`, `analytics.py` - these are auxiliary files, which are used by `Figure_X.py`;
-- `requirements.txt` - provides required packages.
+- `Figure_X.py` - scripts for generating the corresponding figures, where X denotes the figure number in the publication;
+- `circular_beam.py`, `beam_wandering.py`, `analytics.py` - auxiliary modules used by the figure scripts;
+- `requirements.txt` - a list of required Python packages.
 
 
 ## Installation instructions
