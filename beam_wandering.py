@@ -28,14 +28,22 @@ def bw_pdt(eta, eta_0, R, l, bw2):
 
 
 def bw_is_clear_transmittance(a, st2):
-    # If the aperture is about 13 times larger than the beam width, this leads to an overflow of the i0 (i1).
+    """
+    Returns True if the aperture radius is sufficiently large compared to the beam width.
+
+    Specifically, if the aperture is approximately 13 times wider than the beam width,
+    the modified Bessel function i0 overflows. In this regime, the channel behaves like 
+    a near-perfect (high-transmittance) channel. This function detects that condition 
+    so it can be handled manually to avoid numerical overflow and simplify calculations.
+    """
 
     return 4 * a**2 / st2 > EXP_OVERFLOW_THRESHOLD
 
 
 def beam_wandering_pdt(eta, st2, bw2, aperture_radius, eta_0=None, shape_l=None, scale_R=None):
 
-    # In the case of i0 overflow, approximate with the maximum possible PDT, which is close to a clear channel anyway.
+    # If the beam size is negligible compared to the aperture size, the modified Bessel function i0 overflows. 
+    # Physically, this corresponds to a sharply peaked PDT at high transmittance — effectively an almost clear channel.
     if bw_is_clear_transmittance(aperture_radius, st2):
         return bw_pdt(eta, eta_0=1, R=aperture_radius * 1.0113920776113101, l=30.454248857822876, bw2=bw2)
 
