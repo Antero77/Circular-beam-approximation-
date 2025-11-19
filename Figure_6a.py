@@ -93,90 +93,19 @@ sim_W4 = sumW4 / n
 sim_x2_0 = sumx2_0 / n
 sim_etha=sum_etha/n
 sim_etha2=sum_etha2/n
-#------------------------------
-omega = quick_channel.source.k * quick_channel.source.w0 ** 2 / 2 / quick_channel.path.length
-popravka_ro=1.457/1.5
+# ------------------------------
 
-analy_x2_0 = (0.32 * quick_channel.source.w0 ** 2 * popravka_ro*quick_channel.get_rythov2() * omega ** (7 / 6) -
-                    0.06*quick_channel.source.w0 ** 2 * popravka_ro**2*quick_channel.get_rythov2()**2 * omega ** (-1 / 3))
+analy_x2_0 = analytics.get_x2_0(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
+analy_W2 = analytics.get_W2(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
-
-analy_W2 = 4*(quick_channel.source.w0 ** 2 * omega ** (-2)/4 +
-                1.07*quick_channel.source.w0 ** 2 * popravka_ro*quick_channel.get_rythov2() * omega ** (-7 / 6)- analy_x2_0 )
-
-
-
-analy_W4 = 16* (quick_channel.source.w0 ** 4 * omega ** (-4) /16 +
-               0.58 * quick_channel.source.w0 ** 4 * popravka_ro*quick_channel.get_rythov2() * omega ** (-19 / 6) +
-               1.37 * quick_channel.source.w0 ** 4 * popravka_ro**2*quick_channel.get_rythov2() ** 2 * omega ** (-7 / 3)-
-               0.5 * analy_W2 * analy_x2_0 - 3 * analy_x2_0 ** 2)
-
-
-print("x2_0 analy=",analy_x2_0, "x2_0 sim=", sim_x2_0)
-print("W2 analy=",analy_W2, "W2 sim=", sim_W2)
-print("W4 analy=",analy_W4, "W4 sim=", sim_W4)
-# --------------------------------------
-
-
-th=0.136*popravka_ro*quick_channel.get_rythov2()*omega**(-5/6)
-analy_etha=np.exp(-th)*(1-np.exp(-quick_channel.pupil.radius**2*omega**2/quick_channel.source.w0**2/(0.5+5*th)))
-
-
-
-alph=omega**(-2)+3.26*omega**(-7/6)*popravka_ro*quick_channel.get_rythov2()
-
-norm=1
-first_mn=1-np.exp(-quick_channel.pupil.radius**2*(alph*omega**2+1)/alph/quick_channel.source.w0**2)
-second_mn=1-np.exp(-4*omega**2*quick_channel.pupil.radius**2/quick_channel.source.w0**2/(alph*omega**2+1))
-
-analy_etha2=norm*first_mn*second_mn
-
-print("etha analy=",analy_etha, "etha sim=", sim_etha)
-print("etha2 analy=",analy_etha2, "etha2 sim=", sim_etha2)
+analy_W4 = analytics.get_W4(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2())
 
 # --------------------------------------
 
+analy_etha = analytics.get_etha(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2(), quick_channel.pupil.radius)
 
-def circularPDT(a, meanW2, meanW4, meanx2_0):
-
-    def etha0(a, W):
-        return 1 - np.exp(-2 * (a / W) ** 2)
-
-    def lambd(a, W):
-        x = 4 * (a / W) ** 2
-        z = np.where(1 - np.exp(-x) * sp.special.iv(0, x) < 1e-15, 1e-15, 1 - np.exp(-x) * sp.special.iv(0, x))
-        value = 2 * x * (np.exp(-x) * sp.special.iv(1, x) / z) / (np.log(2 * etha0(a, W) / z))
-        return value
-
-    def R(a, W):
-        x = 4 * (a / W) ** 2
-        z = np.where(1 - np.exp(-x) * sp.special.iv(0, x) < 1e-15, 1e-15, 1 - np.exp(-x) * sp.special.iv(0, x))
-        return a * (np.log(2 * etha0(a, W) / z)) ** (-1 / lambd(a, W))
-
-    def integr(W2, etha, sigm2_bw, a):
-        W = W2 ** 0.5
-        l = np.where(2 / lambd(a, W) < 1e-15, 1e-15, 2 / lambd(a, W))
-
-        _log = np.log(etha0(a, W) / etha)
-        y = np.where(_log <= 0, 0, _log ** (l - 1))
-        z = np.where(_log <= 0, 0, _log ** l)
-
-        value = ((R(a, W) ** 2 / (sigm2_bw * lambd(a, W) * etha)) * y * np.exp(-R(a, W) ** 2 / (2 * sigm2_bw) * z) *
-                 W2_distr.pdf(W ** 2))
-        value = np.where(value == np.NaN, 0, value)
-        return value
-
-    mu = np.log((meanW2 ** 2) / (meanW4 ** 0.5))
-    sigma2 = np.log(meanW4 / (meanW2 ** 2))
-
-    W2_distr = sp.stats.lognorm(s=np.sqrt(sigma2), scale=np.exp(mu))
-    range_prec = 0.001
-    Wleft, Wright = W2_distr.ppf(range_prec), W2_distr.ppf(1 - range_prec)
-
-
-    return lambda etha: sp.integrate.quad(integr, Wleft, Wright, args=(etha, meanx2_0, a), limit=75)[0]
-
+analy_etha2 = analytics.get_etha2(quick_channel.source.k,quick_channel.source.w0,quick_channel.path.length ,quick_channel.get_rythov2(), quick_channel.pupil.radius)
 
 
 
@@ -233,6 +162,7 @@ ax.set(xlabel=r'Transmittance $\eta$', ylabel='Probability density')
 #ax.set_xlim(left=0.9, right=1)
 ax.set_xlim(left=0, right=1)
 plt.savefig("etha_distrib.pdf", **save_kwargs)
+
 
 
 
