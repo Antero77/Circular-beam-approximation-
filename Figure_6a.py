@@ -6,6 +6,7 @@ from pyatmosphere.theory.pdt.elliptic_beam import EllipticBeamAnalyticalPDT
 import seaborn as sns
 import circular_beam
 from pyatmosphere import QuickChannel, measures
+import analytics
 
 gpu.config['use_gpu'] = True
 
@@ -232,6 +233,7 @@ ax.set(xlabel=r'Transmittance $\eta$', ylabel='Probability density')
 #ax.set_xlim(left=0.9, right=1)
 ax.set_xlim(left=0, right=1)
 plt.savefig("etha_distrib.pdf", **save_kwargs)
+
 
 
 
