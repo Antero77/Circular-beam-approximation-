@@ -117,7 +117,7 @@ number_for_dots_pdt=200
 #--------------------------------------------------------------
 
 t = np.linspace(0.00001, 1, num=number_for_dots_pdt)
-#t = np.linspace(0.9, 1, num=number_for_dots_pdt)
+
 
 
 acb_model_analy = circular_beam.AnchoredCircularBeamModel.from_beam_params(
@@ -162,6 +162,7 @@ ax.set(xlabel=r'Transmittance $\eta$', ylabel='Probability density')
 #ax.set_xlim(left=0.9, right=1)
 ax.set_xlim(left=0, right=1)
 plt.savefig("etha_distrib.pdf", **save_kwargs)
+
 
 
 
