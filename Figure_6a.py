@@ -32,9 +32,6 @@ import circular_beam
 
 
 
-
-### QuickChannel example
-
 then = datetime.datetime.now()
 from pyatmosphere import QuickChannel, measures
 
@@ -43,7 +40,6 @@ l = 2000
 g=-15
 Cn2 =  10**g
 beam_w0 = (l * 8.08 * 10 ** (-7) / np.pi) ** 0.5
-#beam_w0 = 0.02
 
 quick_channel = QuickChannel(
     Cn2=Cn2,
@@ -88,7 +84,6 @@ for i in range(n):
 
     sumx2_0 = sumx2_0 + (measures.mean_x(quick_channel, output=output)) ** 2
 
-    # temp = temp + (measures.mean_x2(quick_channel, output=output)) ** 2
     temp_etha=measures.eta(quick_channel, output=quick_channel.run())
     etha.append(temp_etha)
     sum_etha=sum_etha+temp_etha
@@ -129,11 +124,7 @@ print("W2 analy=",analy_W2, "W2 sim=", sim_W2)
 print("W4 analy=",analy_W4, "W4 sim=", sim_W4)
 # --------------------------------------
 
-"""
-initial analytical
-analy_etha=1-np.exp(-2*quick_channel.pupil.radius**2/(analy_W2+4*analy_x2_0))
-analytical with local approx
-"""
+
 th=0.136*popravka_ro*quick_channel.get_rythov2()*omega**(-5/6)
 analy_etha=np.exp(-th)*(1-np.exp(-quick_channel.pupil.radius**2*omega**2/quick_channel.source.w0**2/(0.5+5*th)))
 
@@ -193,8 +184,6 @@ def circularPDT(a, meanW2, meanW4, meanx2_0):
     return lambda etha: sp.integrate.quad(integr, Wleft, Wright, args=(etha, meanx2_0, a), limit=75)[0]
 
 
-#--------------------------------------------------------
-
 
 
 #--------------------------------------------------------------
@@ -225,16 +214,16 @@ N_ITERS = 10**4
 eb_model = EllipticBeamAnalyticalPDT(W0=quick_channel.source.w0, a=quick_channel.pupil.radius, size=N_ITERS)
 eb_model.set_params_from_data(np.array(ellipt_mean_x), np.array(ellipt_mean_x2), np.array(ellipt_mean_y2))
 
-errors=0
+
 transmittance = eb_model.pdt()
 transmittance_cleared=[]
 for x in transmittance:
     if not (np.isnan(x) or np.isinf(x)):
         transmittance_cleared.append(x)
-        errors=errors+1
 
 
-print(errors)
+
+
 
 kde_sim = sp.stats.gaussian_kde(transmittance_cleared)
 pdt_etha = kde_sim.pdf(t)
@@ -242,32 +231,7 @@ pdt_etha = kde_sim.pdf(t)
 plt.plot(t, pdt_etha, color='brown',linewidth='2', linestyle='solid')
 
 #------------------------------------------------------------------------------------
-"""
-eb_model2 = EllipticBeamAnalyticalPDT(W0=quick_channel.source.w0, a=quick_channel.pupil.radius, size=N_ITERS)
 
-elliptic_bw=0.33*quick_channel.source.w0**2*quick_channel.get_rythov2()*omega**(7/6)
-elliptic_theta_mean=np.log( (1+2.96*quick_channel.get_rythov2()*omega**(5/6))**2 / omega**2/((1+2.96*quick_channel.get_rythov2()*omega**(5/6))**2+1.2**quick_channel.get_rythov2()*omega**(5/6))**0.5 )
-
-elliptic_disp=np.log(1+1.2*quick_channel.get_rythov2()*omega**(5/6)/(1+2.96*quick_channel.get_rythov2()*omega**(5/6))**2)
-elliptic_corr=np.log(1-0.8*quick_channel.get_rythov2()*omega**(5/6)/(1+2.96*quick_channel.get_rythov2()*omega**(5/6))**2)
-
-
-eb_model2.set_params(elliptic_bw, elliptic_theta_mean, [elliptic_disp, elliptic_corr])
-transmittance2 = eb_model2.pdt()
-
-transmittance_cleared2=[]
-for x in transmittance2:
-    if not (np.isnan(x) or np.isinf(x)):
-        transmittance_cleared2.append(x)
-
-
-
-kde_sim2 = sp.stats.gaussian_kde(transmittance_cleared2)
-pdt_etha2 = kde_sim2.pdf(t)
-
-plt.plot(t, pdt_etha2, color='purple',linewidth='2', linestyle='solid')
-"""
-#-----------------------------------------------------------------------------
 
 
 ax.grid()
@@ -282,5 +246,6 @@ plt.savefig("etha_distrib.pdf", **save_kwargs)
 now = datetime.datetime.now()
 delta = now - then
 print(delta.seconds / 60, "min")
+
 
 
