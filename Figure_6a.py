@@ -1,12 +1,13 @@
 import numpy as np
 import scipy as sp
 from pyatmosphere import gpu
+import matplotlib.pyplot as plt
+from pyatmosphere.theory.pdt.elliptic_beam import EllipticBeamAnalyticalPDT
+import seaborn as sns
+import circular_beam
+from pyatmosphere import QuickChannel, measures
 
 gpu.config['use_gpu'] = True
-
-import matplotlib.pyplot as plt
-
-from pyatmosphere.theory.pdt.elliptic_beam import EllipticBeamAnalyticalPDT
 
 
 
@@ -25,15 +26,7 @@ save_kwargs = {
 
 
 
-import seaborn as sns
-import datetime
 
-import circular_beam
-
-
-
-then = datetime.datetime.now()
-from pyatmosphere import QuickChannel, measures
 
 
 l = 2000
@@ -240,12 +233,9 @@ ax.set(xlabel=r'Transmittance $\eta$', ylabel='Probability density')
 ax.set_xlim(left=0, right=1)
 plt.savefig("etha_distrib.pdf", **save_kwargs)
 
-#plt.show()
 
-# ------------------
-now = datetime.datetime.now()
-delta = now - then
-print(delta.seconds / 60, "min")
+
+
 
 
 
